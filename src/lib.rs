@@ -1,15 +1,86 @@
+//! A thread pool which agressively terminates its threads as soon as they are idle.
+//! If there are queued tasks, OS threads are spawned until the pool is full.
+//! 
+//! When all tasks have been done, no threads are running on this pool.
+//! 
+//! The tasks start in a FIFO(First-In-First-Out) manner. No workstealing occurs.
+//! However, the order in which tasks are completed depends on the OS.
+//! 
+//! ```
+//! use shrink_pool::ShrinkPool;
+//! use num_cpus;
+//! let pool = ShrinkPool::new(num_cpus::get());
+//! 
+//! for i in 0..10 {
+//!     pool.execute(move || println!("task {i} is processing..."))
+//! }
+//! ```
+//! Result:
+//! Task 0 is processing...
+//! Task 2 is processing...
+//! Task 5 is processing...
+//! Task 6 is processing...
+//! Task 7 is processing...
+//! Task 8 is processing...
+//! Task 9 is processing...
+//! Task 3 is processing...
+//! Task 4 is processing...
+//! Task 1 is processing...
+//! 
+//! If you want to synchronize tasks, you can use SyncThread.
+//! It's basically a thread pool which has only one thread, and the thread is terminated when it's not running.
+//! ```
+//! use shrink_pool::SyncThread;
+//!    
+//! let thread = SyncThread::new();
+//!
+//! for i in 0..10 {
+//!     thread.execute(move || print!("{i},"))
+//! }
+//! ```
+//! Result: 
+//! 0,1,2,3,4,5,6,7,8,9,
+//! 
+//! Motivation
+//! 
+//! I don't like libralies which silently spawn global threads and make them wait.
+//! I want to clean them up when they are not running.
+
+
+#[cfg(test)]
+mod shrink_pool_test;
+
 use std::{
     collections::VecDeque,
-    future::Future,
-    sync::{mpsc::Receiver, Arc, Mutex},
+    sync::{Arc, Mutex},
     thread,
 };
-use thiserror::Error;
 /// A thread pool which agressively terminates its threads as soon as they are idle.
 /// If there are queued tasks, OS threads are spawned until num_threads >= pool_size.
 /// When all tasks have been done, no threads are running on this pool.
 /// The tasks start in a FIFO(First-In-First-Out) manner. No workstealing occurs.
 /// However, the order in which tasks are completed depends on the OS.
+/// 
+/// ```
+/// use shrink_pool::ShrinkPool;
+/// use num_cpus;
+/// let pool = ShrinkPool::new(num_cpus::get());
+/// 
+/// for i in 0..10 {
+///     pool.execute(move || println!("task {i} is processing..."))
+/// }
+/// ```
+/// Result:
+/// Task 0 is processing...
+/// Task 2 is processing...
+/// Task 5 is processing...
+/// Task 6 is processing...
+/// Task 7 is processing...
+/// Task 8 is processing...
+/// Task 9 is processing...
+/// Task 3 is processing...
+/// Task 4 is processing...
+/// Task 1 is processing...
 pub struct ShrinkPool {
     pool_size: usize,
     mutex: Arc<Mutex<ShrinkPoolInner>>,
@@ -108,6 +179,17 @@ impl Drop for PanicCatcher {
 /// ShrinkPool whose size is 1.
 /// This can synchronize tasks, which means tasks run in the order they are given, one by one.
 /// The thread is terminated when it's idle, and respawned when a task is given.
+/// ```
+/// use shrink_pool::SyncThread;
+///    
+/// let thread = SyncThread::new();
+///
+/// for i in 0..10 {
+///     thread.execute(move || print!("{i},"))
+/// }
+/// ```
+/// Result: 
+/// 0,1,2,3,4,5,6,7,8,9,
 pub struct SyncThread {
     pool: ShrinkPool,
 }

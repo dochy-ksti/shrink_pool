@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use super::shrink_pool::{ShrinkPool, SyncThread};
+use super::{ShrinkPool, SyncThread};
 //I don't know how to test them. Printlns are nice but they are not unit tests.
 #[test]
 fn shrink_pool_test_sync() -> Result<(), String> {
@@ -77,4 +77,26 @@ fn shrink_pool_test_panicked() -> Result<(), String> {
     }
     thread::sleep(Duration::from_secs(5));
     Ok(())
+}
+
+#[test]
+fn typical_usecase() {
+    use crate::ShrinkPool;
+    use num_cpus;
+    let pool = ShrinkPool::new(num_cpus::get());
+
+    for i in 0..10 {
+        pool.execute(move || println!("Task {i} is processing..."))
+    }
+}
+
+#[test]
+fn typical_usecase_sync_thread() {
+    use crate::SyncThread;
+    
+    let thread = SyncThread::new();
+
+    for i in 0..10 {
+        thread.execute(move || print!("{i},"))
+    }
 }
