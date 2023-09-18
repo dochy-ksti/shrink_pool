@@ -4,7 +4,7 @@ A thread pool which agressively terminates its threads as soon as they are idle.
 
 If there are queued tasks, OS threads are spawned until the pool is full.
 
-When all tasks have been done, no threads are running on this pool.
+When all tasks have been done, no threads are running on the pool.
 
 The tasks start in a FIFO(First-In-First-Out) manner. No workstealing occurs.
 
@@ -13,6 +13,7 @@ However, the order in which tasks are completed depends on the OS.
 ```Rust
 use shrink_pool::ShrinkPool;
 use num_cpus;
+
 let pool = ShrinkPool::new(num_cpus::get());
 
 for i in 0..10 {
@@ -52,6 +53,7 @@ Result:
 
 I don't like libralies which silently spawn global threads and make them wait.
 I want to clean them up when they are not running.
+
 ## License
 
 Licensed under either of

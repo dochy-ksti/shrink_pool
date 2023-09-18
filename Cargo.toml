@@ -2,8 +2,15 @@
 name = "shrink_pool"
 version = "0.9.0"
 edition = "2021"
+authors = ["juzy <dochy.ksti@gmail.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT OR Apache-2.0"
+description = "A thread pool which agressively terminates its threads as soon as they are idle."
+repository = "https://github.com/dochy-ksti/shrink_pool"
+readme = "readme.md"
+keywords = ["concurrency", "thread", "threadpool"]
+categories = ["Concurrency"]
+
 
 [dependencies]
 
