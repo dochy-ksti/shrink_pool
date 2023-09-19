@@ -1,4 +1,4 @@
-use std::{thread, time::Duration};
+use std::{thread, time::Duration, sync::{Arc, atomic::{Ordering, AtomicUsize}}};
 
 use super::{ShrinkPool, SyncThread};
 //I don't know how to test them. Printlns are nice but they are not unit tests.
@@ -79,6 +79,47 @@ fn shrink_pool_test_panicked() -> Result<(), String> {
     Ok(())
 }
 
+#[test]
+fn shrink_pool_concurrency_test(){
+    let counter = Arc::new(AtomicUsize::new(0));
+    let pool = Arc::new(ShrinkPool::new(num_cpus::get()));
+    let mut handles = vec![];
+    for _ in 0..100{
+        let counter = counter.clone();
+        let pool = pool.clone();
+        let handle = thread::spawn(move ||{
+            pool.execute(move ||{
+                counter.fetch_add(1, Ordering::Relaxed);
+            });
+        });
+        handles.push(handle);
+    }
+    for handle in handles{
+        let _unused = handle.join();
+    }
+    assert_eq!(counter.load(Ordering::Relaxed), 100);
+}
+
+#[test]
+fn sync_thread_concurrency_test(){
+    let counter = Arc::new(AtomicUsize::new(0));
+    let thread = Arc::new(SyncThread::new());
+    let mut handles = vec![];
+    for _ in 0..100{
+        let counter = counter.clone();
+        let thread = thread.clone();
+        let handle = thread::spawn(move ||{
+            thread.execute(move ||{
+                counter.fetch_add(1, Ordering::Relaxed);
+            });
+        });
+        handles.push(handle);
+    }
+    for handle in handles{
+        let _unused = handle.join();
+    }
+    assert_eq!(counter.load(Ordering::Relaxed), 100);
+}
 #[test]
 fn typical_usecase() {
     use crate::ShrinkPool;
