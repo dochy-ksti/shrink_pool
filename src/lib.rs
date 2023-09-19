@@ -182,9 +182,9 @@ impl Drop for PanicCatcher {
             //Respawn a thread. num_running_thread will not be inconsistent.
             //When only one thread is running, if it's panicked and not respawned, remaining tasks won't be run.
             //Therefore, respawn strategy is necessary, I believe.
-            
+
             //If all tasks were run, even though some of them panicked, receiver can notice all senders are gone.
-            //If it's stopped after a panic, it can be seen as that tasks are extremely time consuming.
+            //If the pool stopped after a panic, it can be seen as the tasks are extremely time consuming.
             //Moreover, whether pool_size=1 or not is drastically change the behavior is not ergonomic.
 
             //When the mutex is poisoned, the spawned thread panics.
