@@ -1,3 +1,4 @@
+[![crates.io link](https://img.shields.io/crates/v/shrink_pool.svg)](https://crates.io/crates/shrink_pool)
 # ShrinkPool
 
 A thread pool which agressively terminates its threads as soon as they are idle.
@@ -62,6 +63,6 @@ Licensed under either of
 - MIT license ([LICENSE-MIT](mit_license.txt) or http://opensource.org/licenses/MIT)
 
 <!--
-[![crates.io link](https://img.shields.io/crates/v/docchi.svg)](https://crates.io/crates/docchi)
+
 
 -->
