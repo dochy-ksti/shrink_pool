@@ -80,6 +80,27 @@ fn shrink_pool_test_panicked() -> Result<(), String> {
 }
 
 #[test]
+fn sync_thread_test_panicked() -> Result<(), String> {
+    let pool = SyncThread::new();
+
+    for i in 0..50 {
+        pool.execute(move || {
+            if i % 5 == 0 {
+                println!("");
+                println!("panic is preparing...");
+                panic!("panicked id {:?} num {}", thread::current().id(), i);
+            } else {
+                println!("");
+                println!("success id {:?} num {}", thread::current().id(), i);
+                println!("");
+            }
+        })
+    }
+    thread::sleep(Duration::from_secs(5));
+    Ok(())
+}
+
+#[test]
 fn shrink_pool_concurrency_test(){
     let counter = Arc::new(AtomicUsize::new(0));
     let pool = Arc::new(ShrinkPool::new(num_cpus::get()));
